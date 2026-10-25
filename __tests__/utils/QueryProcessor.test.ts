@@ -51,6 +51,15 @@ describe("QueryProcessor", () => {
 
     test('should compute powers exactly', () => {
         expect(QueryProcessor("What is 38 to the power of 97?")).toBe((38n ** 97n).toString());
+        expect(QueryProcessor("What is 32 to the power of 22?")).toBe((32n ** 22n).toString());
+    })
+
+    test('should respect operator precedence', () => {
+        expect(QueryProcessor("What is 98 multiplied by 3 plus 37?")).toBe("331");
+    })
+
+    test('should divide numbers', () => {
+        expect(QueryProcessor("What is 84 divided by 4?")).toBe("21");
     })
 
     test('should find the largest number', () => {

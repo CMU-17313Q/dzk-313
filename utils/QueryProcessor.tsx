@@ -1,3 +1,13 @@
+const OP_ALIASES: Record<string, string> = {
+  "plus": "+",
+  "minus": "-",
+  "multiplied by": "*",
+  "times": "*",
+  "divided by": "/",
+  "to the power of": "^",
+  "power": "^",
+};
+
 export default function QueryProcessor(query: string): string {
   const q = query.toLowerCase().replace(/[^a-z0-9]/g, "");
   const nums = (query.match(/\d+/g) ?? []).map(Number);
@@ -28,35 +38,93 @@ export default function QueryProcessor(query: string): string {
   if ((q.includes("smallest") || q.includes("least")) && nums.length > 0) {
     return String(Math.min(...nums));
   }
-  if ((q.includes("plus") || q.includes("sum")) && nums.length >= 2) {
-    return String(nums.reduce((a, b) => a + b, 0));
-  }
-  if ((q.includes("minus") || q.includes("difference")) && nums.length >= 2) {
-    return String(nums.slice(1).reduce((a, b) => a - b, nums[0]));
-  }
-  if ((q.includes("multiplied") || q.includes("times") || q.includes("product")) && nums.length >= 2) {
-    return String(nums.reduce((a, b) => a * b, 1));
-  }
-  if (q.includes("divided") && nums.length >= 2) {
-    return String(nums.slice(1).reduce((a, b) => a / b, nums[0]));
-  }
-  if (q.includes("power") && nums.length >= 2) {
-    return (BigInt(nums[0]) ** BigInt(nums[1])).toString();
-  }
-  if (q.includes("fibonacci") && nums.length > 0) {
-    return String(fib(nums[0]));
-  }
   if (q.includes("square") && q.includes("cube") && nums.length > 0) {
     return nums.filter(isSquareAndCube).join(", ");
   }
   if (q.includes("prime") && nums.length > 0) {
     return nums.filter(isPrime).join(", ");
   }
+  if (q.includes("fibonacci") && nums.length > 0) {
+    return String(fib(nums[0]));
+  }
+  if (q.includes("sum") && nums.length >= 2) {
+    return String(nums.reduce((a, b) => a + b, 0));
+  }
+  if (q.includes("product") && nums.length >= 2) {
+    return String(nums.reduce((a, b) => a * b, 1));
+  }
+  if (q.includes("difference") && nums.length >= 2) {
+    return String(nums[0] - nums[1]);
+  }
+  const expr = parseExpr(query);
+  if (expr) {
+    try {
+      return collapse([...expr[0]], [...expr[1]], applyBig).toString();
+    } catch {
+      return String(collapse(expr[0].map(Number), [...expr[1]], applyNum));
+    }
+  }
 
   if (q.includes("name")) return "Dilshod";
   if (q.includes("age")) return "67";
 
   return "";
+}
+
+function parseExpr(query: string): [bigint[], string[]] | null {
+  const tokens =
+    query
+      .toLowerCase()
+      .match(/\d+|to\s+the\s+power\s+of|multiplied\s+by|divided\s+by|plus|minus|times|power/g) ??
+    [];
+  const vals: bigint[] = [];
+  const ops: string[] = [];
+  for (const t of tokens) {
+    if (/^\d+$/.test(t)) {
+      vals.push(BigInt(t));
+    } else {
+      const op = OP_ALIASES[t.replace(/\s+/g, " ")];
+      if (op === undefined) return null;
+      ops.push(op);
+    }
+  }
+  if (vals.length < 2 || ops.length !== vals.length - 1) return null;
+  return [vals, ops];
+}
+
+function collapse<T>(vals: T[], ops: string[], apply: (a: T, op: string, b: T) => T): T {
+  for (const tier of ["^", "*/", "+-"]) {
+    for (let i = 0; i < ops.length; ) {
+      if (tier.includes(ops[i])) {
+        vals[i] = apply(vals[i], ops[i], vals[i + 1]);
+        vals.splice(i + 1, 1);
+        ops.splice(i, 1);
+      } else i++;
+    }
+  }
+  return vals[0];
+}
+
+function applyBig(a: bigint, op: string, b: bigint): bigint {
+  switch (op) {
+    case "+": return a + b;
+    case "-": return a - b;
+    case "*": return a * b;
+    case "^": return a ** b;
+    default:
+      if (b === 0n || a % b !== 0n) throw new Error("inexact division");
+      return a / b;
+  }
+}
+
+function applyNum(a: number, op: string, b: number): number {
+  switch (op) {
+    case "+": return a + b;
+    case "-": return a - b;
+    case "*": return a * b;
+    case "^": return a ** b;
+    default: return a / b;
+  }
 }
 
 function isPrime(n: number): boolean {
