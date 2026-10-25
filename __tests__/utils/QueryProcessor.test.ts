@@ -22,7 +22,7 @@ describe("QueryProcessor", () => {
         const query = "What is your name?";
         const response: string = QueryProcessor(query);
         expect(response).toBe((
-            "Eduardo"
+            "Dilshod"
           ));
     })
 
@@ -30,5 +30,17 @@ describe("QueryProcessor", () => {
         const query = "What is your Andrew ID?";
         const response: string = QueryProcessor(query);
         expect(response).toBe("dzk");
+    })
+
+    test('should return player ID', () => {
+        const query = "What is your player ID?";
+        const response: string = QueryProcessor(query);
+        expect(response).toBe("d1bcc070");
+    })
+
+    test('should return game ID', () => {
+        const query = "What is your game ID?";
+        const response: string = QueryProcessor(query);
+        expect(response).toBe("a5d040da");
     })
 });
