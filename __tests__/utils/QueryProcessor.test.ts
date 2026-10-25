@@ -62,6 +62,14 @@ describe("QueryProcessor", () => {
         expect(QueryProcessor("What is 84 divided by 4?")).toBe("21");
     })
 
+    test('should find anagrams', () => {
+        expect(QueryProcessor("Which of the following is an anagram of listen: banana, enlists, silent, google?")).toBe("silent");
+    })
+
+    test('should score scrabble words', () => {
+        expect(QueryProcessor("What is the scrabble score of september?")).toBe("15");
+    })
+
     test('should find the largest number', () => {
         expect(QueryProcessor("Which of the following numbers is the largest: 86, 67, 80?")).toBe("86");
     })

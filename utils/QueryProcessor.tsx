@@ -24,6 +24,20 @@ export default function QueryProcessor(query: string): string {
   if (q.includes("gameid")) return "a5d040da";
   if (q.includes("andrew")) return "dzk";
 
+  const anagram = query.toLowerCase().match(/anagram of ([a-z]+)[:\s]+(.*)/);
+  if (anagram) {
+    const target = [...anagram[1]].sort().join("");
+    const match = anagram[2]
+      .split(/,|\s+or\s+/)
+      .map((w) => w.replace(/[^a-z]/g, ""))
+      .filter(Boolean)
+      .find((w) => [...w].sort().join("") === target);
+    if (match) return match;
+  }
+
+  const scrabble = query.toLowerCase().match(/scrabble score of ([a-z]+)/);
+  if (scrabble) return String(scrabbleScore(scrabble[1]));
+
   // Trivia
   if (q.includes("eiffeltower")) return "Paris";
   if (q.includes("jamesbond")) return "Sean Connery";
@@ -138,6 +152,20 @@ function isPrime(n: number): boolean {
 function isSquareAndCube(n: number): boolean {
   const root = Math.round(Math.pow(n, 1 / 6));
   return Math.pow(root, 6) === n;
+}
+
+const SCRABBLE: Record<string, number> = {
+  a: 1, e: 1, i: 1, l: 1, n: 1, o: 1, r: 1, s: 1, t: 1, u: 1,
+  d: 2, g: 2,
+  b: 3, c: 3, m: 3, p: 3,
+  f: 4, h: 4, v: 4, w: 4, y: 4,
+  k: 5,
+  j: 8, x: 8,
+  q: 10, z: 10,
+};
+
+function scrabbleScore(word: string): number {
+  return [...word].reduce((sum, ch) => sum + (SCRABBLE[ch] ?? 0), 0);
 }
 
 function fib(n: number): number {
