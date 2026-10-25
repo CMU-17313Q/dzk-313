@@ -29,19 +29,19 @@ export default function QueryProcessor(query: string): string {
     return String(Math.min(...nums));
   }
   if ((q.includes("plus") || q.includes("sum")) && nums.length >= 2) {
-    return String(nums[0] + nums[1]);
+    return String(nums.reduce((a, b) => a + b, 0));
   }
   if ((q.includes("minus") || q.includes("difference")) && nums.length >= 2) {
-    return String(nums[0] - nums[1]);
+    return String(nums.slice(1).reduce((a, b) => a - b, nums[0]));
   }
   if ((q.includes("multiplied") || q.includes("times") || q.includes("product")) && nums.length >= 2) {
-    return String(nums[0] * nums[1]);
+    return String(nums.reduce((a, b) => a * b, 1));
   }
   if (q.includes("divided") && nums.length >= 2) {
-    return String(nums[0] / nums[1]);
+    return String(nums.slice(1).reduce((a, b) => a / b, nums[0]));
   }
   if (q.includes("power") && nums.length >= 2) {
-    return String(Math.pow(nums[0], nums[1]));
+    return (BigInt(nums[0]) ** BigInt(nums[1])).toString();
   }
   if (q.includes("fibonacci") && nums.length > 0) {
     return String(fib(nums[0]));

@@ -46,6 +46,11 @@ describe("QueryProcessor", () => {
 
     test('should add numbers', () => {
         expect(QueryProcessor("What is 62 plus 67?")).toBe("129");
+        expect(QueryProcessor("What is 86 plus 53 plus 14?")).toBe("153");
+    })
+
+    test('should compute powers exactly', () => {
+        expect(QueryProcessor("What is 38 to the power of 97?")).toBe((38n ** 97n).toString());
     })
 
     test('should find the largest number', () => {
